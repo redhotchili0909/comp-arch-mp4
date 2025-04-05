@@ -24,7 +24,12 @@ always_ff @(posedge clk or negedge rst_n) begin
     end
 end
 
-assign rs1_data = (rs1 == 5'b0) ? 32'b0 : registers[rs1]; // Read data from rs1
-assign rs2_data = (rs2 == 5'b0) ? 32'b0 : registers[rs2]; // Read data from rs2
+// read rdv directly if rd == rs1 or rd == rs2 and w_en is high
+assign rs1_data = (rs1 == 5'd0) ? 32'd0 :
+                  (rs1 == rd && w_en) ? rdv : registers[rs1];
+
+assign rs2_data = (rs2 == 5'd0) ? 32'd0 :
+                  (rs2 == rd && w_en) ? rdv : registers[rs2];
+
 
 endmodule
