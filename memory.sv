@@ -1,7 +1,7 @@
 // RV32I memory module
 //
-// Implements 16kB of actual memory in the address range of 0x00000000 to
-// 0x00003FFF, which can be written to or read from in words (4 bytes), 
+// Implements 8kB of actual memory in the address range of 0x00000000 to
+// 0x00001FFF, which can be written to or read from in words (4 bytes), 
 // half words (2 bytes), or single bytes. Word accesses are aligned to four-byte 
 // boundaries, and half-word access are aligned to two-byte boundaries.
 // Half-word and sigle-byte reads are either sign extended or zero extended to 
@@ -9,7 +9,7 @@
 // when fetching instructions as it is during execution of lw / sw instructions. 
 // Addresses outside of the physical address space are read as 32'd0. The memory 
 // can be initialized by specifying via the INIT_FILE parameter the name of a 
-// text file containing 4,096 lines of 32-bit hex values. If no file name is 
+// text file containing 2,048 lines of 32-bit hex values. If no file name is 
 // specified, the memory is initialized to all 0s.
 //
 // The memory module also implements some memory-mapped peripherals: 8-bit PWM 
@@ -46,8 +46,27 @@ module memory #(
     logic [13:0] millis_counter = 14'd0;
     logic [3:0] micros_counter = 4'd0;
 
-    // Declare memory array for 16kB of actual memory
-    logic [31:0] memory [0:4095];
+    // Declare memory array for 8kB of actual memory
+    logic [31:0] memory [0:2047];
+
+    // Declare variables to save the two LSBs of the read address and funct3
+    logic read_address0;
+    logic read_address1;
+    logic read_word;
+    logic read_half;
+    logic read_unsigned;
+
+    // Declare variables to make iverilog stop yelling at us
+    logic [15:0] read_value10;
+    logic [15:0] read_value32;
+    logic [7:0] read_value0;
+    logic [7:0] read_value1;
+    logic [7:0] read_value2;
+    logic [7:0] read_value3;
+    logic sign_bit0;
+    logic sign_bit1;
+    logic sign_bit2;
+    logic sign_bit3;
 
     int i;
 
@@ -57,7 +76,7 @@ module memory #(
             $readmemh(INIT_FILE, memory);
         end
         else begin
-            for (i = 0; i < 4096; i++) begin
+            for (i = 0; i < 2048; i++) begin
                 memory[i] = 32'd0;
             end
         end
@@ -65,16 +84,22 @@ module memory #(
 
     // Handle memory reads
     always_ff @(posedge clk) begin
-        if (read_address[31:14] == 18'd0) begin
-            read_value <= memory[read_address[13:2]];
+        read_address1 <= read_address[1];
+        read_address0 <= read_address[0];
+        read_word <= funct3[1];
+        read_half <= funct3[0];
+        read_unsigned <= funct3[2];
+
+        if (read_address[31:13] == 19'd0) begin
+            read_value <= memory[read_address[12:2]];
         end
-        else if (read_address[31:14] == 18'h3FFFF) begin
-            case(read_address[13:2])
-                12'hFFF:
+        else if (read_address[31:13] == 19'h7FFFF) begin
+            case(read_address[12:2])
+                11'h7FF:
                     read_value <= leds;
-                12'hFFE:
+                11'h7FE:
                     read_value <= millis;
-                12'hFFD:
+                11'h7FD:
                     read_value <= micros;
                 default:
                     read_value <= 32'd0;
@@ -85,88 +110,104 @@ module memory #(
         end
     end
 
+    assign read_value10 = read_value[15:0];
+    assign read_value32 = read_value[31:16];
+    assign read_value0 = read_value[7:0];
+    assign read_value1 = read_value[15:8];
+    assign read_value2 = read_value[23:16];
+    assign read_value3 = read_value[31:24];
+    assign sign_bit0 = read_value[7];
+    assign sign_bit1 = read_value[15];
+    assign sign_bit2 = read_value[23];
+    assign sign_bit3 = read_value[31];
+
     always_comb begin
-        read_data = read_value;
-        case (funct3)
-            3'b000: begin
-                case (read_address[1:0]):
-                    2'b00:
-                        read_data = {24{read_value[7]}, read_value[7:0]};
-                    2'b01:
-                        read_data = {24{read_value[15]}, read_value[15:8]};
-                    2'b10:
-                        read_data = {24{read_value[23]}, read_value[23:16]};
-                    2'b11:
-                        read_data = {24{read_value[31]}, read_value[31:24]};
-                endcase
-            end
-            3'b001:
-                read_data = read_address[1] ? {16{read_value[31]}, read_value[31:16]} : {16{read_value[15]}, read_value[15:0]};
-            3'b010:
-                read_data = read_value;
-            3'b100: begin
-                case (read_address[1:0]):
-                    2'b00:
-                        read_data = {24'd0, read_value[7:0]};
-                    2'b01:
-                        read_data = {24'd0, read_value[15:8]};
-                    2'b10:
-                        read_data = {24'd0, read_value[23:16]};
-                    2'b11:
-                        read_data = {24'd0, read_value[31:24]};
-                endcase
-            end
-            3'b101:
-                read_data = read_address[1] ? {16'd0, read_value[31:16]} : {16'd0, read_value[15:0]};
-        endcase
+        if (read_word) begin
+            read_data = read_value;
+        end
+        else if (read_half && !read_unsigned) begin
+            read_data = read_address1 ? {{16{sign_bit3}}, read_value32} : {{16{sign_bit1}}, read_value10};
+        end
+        else if (read_half && read_unsigned) begin
+            read_data = read_address1 ? {16'd0, read_value32} : {16'd0, read_value10};
+        end
+        else if (!read_half && !read_unsigned) begin
+            case ({read_address1, read_address0})
+                2'b00:
+                    read_data = {{24{sign_bit0}}, read_value0};
+                2'b01:
+                    read_data = {{24{sign_bit1}}, read_value1};
+                2'b10:
+                    read_data = {{24{sign_bit2}}, read_value2};
+                2'b11:
+                    read_data = {{24{sign_bit3}}, read_value3};
+            endcase
+        end
+        else if (!read_half && read_unsigned) begin
+            case ({read_address1, read_address0})
+                2'b00:
+                    read_data = {24'd0, read_value0};
+                2'b01:
+                    read_data = {24'd0, read_value1};
+                2'b10:
+                    read_data = {24'd0, read_value2};
+                2'b11:
+                    read_data = {24'd0, read_value3};
+            endcase
+        end
+        else begin
+            read_data = read_value;
+        end
     end
 
     // Handle memory writes
     always_ff @(posedge clk) begin
-        if (write_enable) begin
-            if (write_address[31:14] == 18'd0) begin
-                case (funct3)
-                    3'b000:
-                        case (write_address[1:0])
-                            2'b00:
-                                memory[write_address[13:2]][7:0] <= write_data[7:0];
-                            2'b01:
-                                memory[write_address[13:2]][15:8] <= write_data[7:0];
-                            2'b10:
-                                memory[write_address[13:2]][23:16] <= write_data[7:0];
-                            2'b11:
-                                memory[write_address[13:2]][31:24] <= write_data[7:0];
-                        endcase
-                    3'b001:
-                        if (write_address[1])
-                            memory[write_address[13:2]][31:16] <= write_data[15:0];
-                        else
-                            memory[write_address[13:2]][15:0] <= write_data[15:0];
-                    3'b010:
-                        memory[write_address[13:2]] <= write_data;
-                endcase
+        if (write_mem) begin
+            if (write_address[31:13] == 19'd0) begin
+                if (funct3[1]) begin
+                    memory[write_address[12:2]] <= write_data;
+                end
+                else if (funct3[0]) begin
+                    if (write_address[1])
+                        memory[write_address[12:2]][31:16] <= write_data[15:0];
+                    else
+                        memory[write_address[12:2]][15:0] <= write_data[15:0];
+                end
+                else begin
+                    case (write_address[1:0])
+                        2'b00:
+                            memory[write_address[12:2]][7:0] <= write_data[7:0];
+                        2'b01:
+                            memory[write_address[12:2]][15:8] <= write_data[7:0];
+                        2'b10:
+                            memory[write_address[12:2]][23:16] <= write_data[7:0];
+                        2'b11:
+                            memory[write_address[12:2]][31:24] <= write_data[7:0];
+                    endcase
+                end
             end
-            else if (write_address[31:2] == 30'h3FFFFFF) begin
-                case (funct3)
-                    3'b000:
-                        case (write_address[1:0])
-                            2'b00:
-                                leds[7:0] <= write_data[7:0];
-                            2'b01:
-                                leds[15:8] <= write_data[7:0];
-                            2'b10:
-                                leds[23:16] <= write_data[7:0];
-                            2'b11:
-                                leds[31:24] <= write_data[7:0];
-                        endcase
-                    3'b001:
-                        if (write_address[1])
-                            leds[31:16] <= write_data[15:0];
-                        else
-                            leds[15:0] <= write_data[15:0];
-                    3'b010:
-                        leds <= write_data;
-                endcase
+            else if (write_address[31:2] == 30'h3FFFFFFF) begin
+                if (funct3[1]) begin
+                    leds <= write_data;
+                end
+                else if (funct3[0]) begin
+                    if (write_address[1])
+                        leds[31:16] <= write_data[15:0];
+                    else
+                        leds[15:0] <= write_data[15:0];
+                end
+                else begin
+                    case (write_address[1:0])
+                        2'b00:
+                            leds[7:0] <= write_data[7:0];
+                        2'b01:
+                            leds[15:8] <= write_data[7:0];
+                        2'b10:
+                            leds[23:16] <= write_data[7:0];
+                        2'b11:
+                            leds[31:24] <= write_data[7:0];
+                    endcase
+                end
             end
         end
     end
