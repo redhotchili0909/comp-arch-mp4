@@ -1,5 +1,6 @@
 module prog_count (
     input logic clk,
+    input logic pc_write,
     input logic isBranch,
     input logic isJump,
     input logic isJALR,
@@ -9,9 +10,7 @@ module prog_count (
     output logic [31:0] pc
 );
 
-    
     initial pc = 32'h0000_0000; // Initialize pc to 0
-
 
     logic [31:0] PC_increment;
     logic [31:0] PC_immed;
@@ -22,12 +21,14 @@ module prog_count (
     assign PC_rs1 = rs1_data + immed; // Increment PC by rs1_data + immediate for JALR
   
     always_ff @(posedge clk) begin
-        if (isJump || isBranch) begin
-            pc <= PC_immed;
-        end else if (isJALR) begin
-            pc <= PC_rs1;
-        end else begin
-            pc <= PC_increment;
+        if (pc_write) begin 
+            if (isJump || isBranch) begin
+                pc <= PC_immed;
+            end else if (isJALR) begin
+                pc <= PC_rs1;
+            end else begin
+                pc <= PC_increment;
+            end
         end
     end
 endmodule
