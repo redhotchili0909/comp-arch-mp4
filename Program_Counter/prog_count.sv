@@ -1,6 +1,5 @@
-module program_counter(
+module prog_count (
     input logic clk,
-    input logic rst_n,
     input logic isBranch,
     input logic isJump,
     input logic isJALR,
@@ -10,6 +9,10 @@ module program_counter(
     output logic [31:0] pc
 );
 
+    
+    initial pc = 32'h0000_0000; // Initialize pc to 0
+
+
     logic [31:0] PC_increment;
     logic [31:0] PC_immed;
     logic [31:0] PC_rs1;
@@ -18,17 +21,13 @@ module program_counter(
     assign PC_immed = pc + immed; // Increment PC by immediate for jump and branch
     assign PC_rs1 = rs1_data + immed; // Increment PC by rs1_data + immediate for JALR
   
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            pc <= 32'b0;
+    always_ff @(posedge clk) begin
+        if (isJump || isBranch) begin
+            pc <= PC_immed;
+        end else if (isJALR) begin
+            pc <= PC_rs1;
         end else begin
-            if (isJump || isBranch) begin
-                pc <= PC_immed;
-            end else if (isJALR) begin
-                pc <= PC_rs1;
-            end else begin
-                pc <= PC_increment;
-            end
+            pc <= PC_increment;
         end
     end
 endmodule
