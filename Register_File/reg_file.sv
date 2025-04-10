@@ -1,6 +1,5 @@
 module reg_file(
     input logic clk,
-    input logic rst_n, //reset
     input logic w_en, //write enable
     input logic [4:0] rs1, //source register 1
     input logic [4:0] rs2, //source register 2
@@ -13,13 +12,15 @@ module reg_file(
 
 logic [31:0] registers [0:31]; //32 registers of 32 bits each
 
-// Init registers to 0
-always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        for (int i = 0; i < 32; i++) begin
+initial begin
+    for (int i = 0; i < 32; i++) begin
             registers[i] <= 32'b0;
         end
-    end else if (w_en && rd != 5'b0) begin // Write to register if w_en is high and rd is not zero register
+end
+
+// Init registers to 0
+always_ff @(posedge clk) begin
+    if (w_en && rd != 5'b0) begin // Write to register if w_en is high and rd is not zero register
         registers[rd] <= rdv;
     end
 end
