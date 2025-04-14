@@ -1,4 +1,4 @@
-`timescale 1ns/1ps
+`timescale 10ns/10ns
 
 module instruct_decoder_tb;
 
@@ -20,8 +20,8 @@ module instruct_decoder_tb;
     logic        branch;
     logic        jump;
 
-    // Instantiate decoder
-    instruction_decoder dut (
+    // Instantiate the Unit Under Test (UUT)
+    instruct_decoder uut (
         .instruction(instruction),
         .opcode(opcode),
         .rd(rd),
@@ -42,61 +42,70 @@ module instruct_decoder_tb;
         .jump(jump)
     );
 
-    
-    task display_decoded;
-        $display("Instruction: 0x%08h", instruction);
-        $display("  opcode    = %b", opcode);
-        $display("  rd        = %0d", rd);
-        $display("  rs1       = %0d", rs1);
-        $display("  rs2       = %0d", rs2);
-        $display("  funct3    = %b", funct3);
-        $display("  funct7    = %b", funct7);
-        $display("  imm_I     = 0x%08h", imm_I);
-        $display("  imm_S     = 0x%08h", imm_S);
-        $display("  imm_B     = 0x%08h", imm_B);
-        $display("  imm_U     = 0x%08h", imm_U);
-        $display("  imm_J     = 0x%08h", imm_J);
-        $display("  reg_write = %b", reg_write);
-        $display("  mem_read  = %b", mem_read);
-        $display("  mem_write = %b", mem_write);
-        $display("  alu_op    = %b", alu_op);
-        $display("  branch    = %b", branch);
-        $display("  jump      = %b", jump);
-        $display("----------------------------------------");
+    // Task to display current outputs
+    task print_outputs(string name);
+        $display("----- %s -----", name);
+        $display("opcode   = %b", opcode);
+        $display("rd       = %0d", rd);
+        $display("rs1      = %0d", rs1);
+        $display("rs2      = %0d", rs2);
+        $display("funct3   = %b", funct3);
+        $display("funct7   = %b", funct7);
+        $display("imm_I    = %0d", imm_I);
+        $display("imm_S    = %0d", imm_S);
+        $display("imm_B    = %0d", imm_B);
+        $display("imm_U    = %0d", imm_U);
+        $display("imm_J    = %0d", imm_J);
+        $display("reg_write= %b", reg_write);
+        $display("mem_read = %b", mem_read);
+        $display("mem_write= %b", mem_write);
+        $display("alu_op   = %b", alu_op);
+        $display("branch   = %b", branch);
+        $display("jump     = %b", jump);
+        $display("");
     endtask
 
     initial begin
 
-        // ADD x1, x2, x3
+        $dumpfile("instruction_decoder.vcd");
+        $dumpvars(0, instruct_decoder_tb);
+
+        // R-type ADD: add x1, x2, x3 -> opcode: 0110011, funct3: 000, funct7: 0000000
         instruction = 32'b0000000_00011_00010_000_00001_0110011;
-        #1 display_decoded();
+        #10; print_outputs("ADD");
 
-        // ADDI x1, x2, 5
+        // R-type SUB: sub x1, x2, x3
+        instruction = 32'b0100000_00011_00010_000_00001_0110011;
+        #10; print_outputs("SUB");
+
+        // I-type ADDI: addi x1, x2, 5
         instruction = 32'b000000000101_00010_000_00001_0010011;
-        #1 display_decoded();
+        #10; print_outputs("ADDI");
 
-        // LW x1, 16(x2)
-        instruction = 32'b000000010000_00010_010_00001_0000011;
-        #1 display_decoded();
+        // Load LW: lw x1, 8(x2)
+        instruction = 32'b000000001000_00010_010_00001_0000011;
+        #10; print_outputs("LW");
 
-        // SW x1, 20(x2)
-        instruction = 32'b0000000_00001_00010_010_10100_0100011;
-        #1 display_decoded();
+        // Store SW: sw x3, 12(x2)
+        instruction = 32'b0000000_00011_00010_010_01100_0100011;
+        #10; print_outputs("SW");
 
-        // BEQ x1, x2, offset -4
-        instruction = 32'b1111111_00010_00001_000_11110_1100011;
-        #1 display_decoded();
+        // Branch BEQ: beq x1, x2, offset 16
+        instruction = 32'b000000_00010_00001_000_00100_1100011; // 
+        #10; print_outputs("BEQ");
 
-        // JAL x1, offset 32
-        instruction = 32'b000000000010_00000000_00000_00001_1101111;
-        #1 display_decoded();
+        // Jump JAL: jal x1, offset 32
+        instruction = 32'b000000000010_00000000_00001_1101111; // 
+        #10; print_outputs("JAL");
 
-        // LUI x1, 0x12345
+        // LUI: lui x1, 0x12345
         instruction = 32'b00010010001101000101_00001_0110111;
-        #1 display_decoded();
+        #10; print_outputs("LUI");
 
-        $display("Instruction decoder test complete.");
+        // JALR: jalr x1, 0(x2)
+        instruction = 32'b000000000000_00010_000_00001_1100111;
+        #10; print_outputs("JALR");
+
         $finish;
     end
-
 endmodule
