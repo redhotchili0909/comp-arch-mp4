@@ -42,13 +42,8 @@ module riscv_processor(
     logic [6:0] funct7;             // funct7 field from instruction
     logic [6:0] opcode;             // opcode field from instruction
 
-    // Extract instruction fields from the instruction register
-    assign opcode = instruction_reg[6:0];
-    assign funct3 = instruction_reg[14:12];
-    assign funct7 = instruction_reg[31:25];
-
     // Program Counter module
-    program_counter pc_module(
+    prog_counter pc_module(
         .clk(clk),
         .rst_n(rst_n),
         .isBranch(is_branch && take_branch && pc_write),
@@ -103,9 +98,22 @@ module riscv_processor(
         .blue(blue)
     );
 
+    // Instruction Decoder
+    instruction_decoder decoder(
+        .instruction(instruction_reg),
+        .opcode(opcode),
+        .rd(rd),
+        .funct3(funct3),
+        .rs1(rs1),
+        .rs2(rs2),
+        .funct7(funct7)
+    );
+
     // Immediate Generator
     immed_gen immed_generator(
         .instruction(instruction_reg),
+        .opcode(opcode),
+        .funct3(funct3),
         .immediate(immediate)
     );
 
