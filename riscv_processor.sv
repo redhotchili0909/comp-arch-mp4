@@ -56,6 +56,8 @@ module riscv_processor(
     logic [6:0] funct7;             // funct7 field from instruction
     logic [6:0] opcode;             // opcode field from instruction
 
+    logic [2:0] mem_funct3;         // funct3 for memory operations
+
     // Program Counter module
     prog_count pc_module(
         .clk(clk),
@@ -94,13 +96,23 @@ module riscv_processor(
         end
     end
 
+    always_comb begin
+        if (mem_read) begin
+            // For data reads, use the funct3 from the instruction
+            mem_funct3 = funct3;
+        end else begin
+            // For instruction fetch, always use 3'b010 (word read)
+            mem_funct3 = 3'b010;
+        end
+    end
+
     // Memory module for instruction and data
     memory #(
-        .INIT_FILE("program.txt")  // memory file
+        .INIT_FILE("BradTest/rv32i_test.txt")  // memory file
     ) memory_module(
         .clk(clk),
         .write_mem(mem_write),
-        .funct3(funct3),
+        .funct3(mem_funct3),
         .write_address(alu_result_reg),
         .write_data(rs2_data),
         .read_address(mem_read ? alu_result_reg : pc),
