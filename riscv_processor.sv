@@ -1,3 +1,13 @@
+`include "Instruction_Decoder/instruct_decoder.sv"
+`include "Immed_gen/immed_gen.sv"
+`include "Register_File/reg_file.sv"
+`include "riscv_fsm.sv"
+`include "memory.sv"
+`include "Program_Counter/prog_count.sv"
+`include "ALU/alu_control.sv"
+`include "ALU/alu.sv"
+`include "ALU/branch_control.sv"
+
 module riscv_processor(
     input logic clk,
     input logic rst_n,
@@ -16,6 +26,10 @@ module riscv_processor(
     logic [31:0] read_data;         // Memory read data
     logic [31:0] mem_data_reg;      // Memory data register
     logic [31:0] write_data;        // Data to write to register
+    
+    logic [4:0] rd;
+    logic [4:0] rs1;
+    logic [4:0] rs2;
     
     // Control signals
     logic zero;                     // ALU zero flag
@@ -43,9 +57,8 @@ module riscv_processor(
     logic [6:0] opcode;             // opcode field from instruction
 
     // Program Counter module
-    prog_counter pc_module(
+    prog_count pc_module(
         .clk(clk),
-        .rst_n(rst_n),
         .isBranch(is_branch && take_branch && pc_write),
         .isJump(is_jal && pc_write),
         .isJALR(is_jalr && pc_write),
@@ -83,7 +96,7 @@ module riscv_processor(
 
     // Memory module for instruction and data
     memory #(
-        .INIT_FILE("")  // memory file
+        .INIT_FILE("program.txt")  // memory file
     ) memory_module(
         .clk(clk),
         .write_mem(mem_write),
@@ -120,11 +133,10 @@ module riscv_processor(
     // Register File
     reg_file registers(
         .clk(clk),
-        .rst_n(rst_n),
         .w_en(reg_write),
-        .rs1(instruction_reg[19:15]),
-        .rs2(instruction_reg[24:20]),
-        .rd(instruction_reg[11:7]),
+        .rs1(rs1),
+        .rs2(rs2),
+        .rd(rd),
         .rdv(write_data),
         .rs1_data(rs1_data),
         .rs2_data(rs2_data)
@@ -192,12 +204,10 @@ module riscv_processor(
     end
 
     // Control Unit (State Machine)
-    riscv_fsm fsm(
+    control_unit fsm(
         .clk(clk),
         .rst_n(rst_n),
         .opcode(opcode),
-        .funct3(funct3),
-        .funct7(funct7),
         .take_branch(take_branch),
         .pc_write(pc_write),
         .ir_write(ir_write),
