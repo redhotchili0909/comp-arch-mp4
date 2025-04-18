@@ -61,6 +61,7 @@ module riscv_processor(
     // Program Counter module
     prog_count pc_module(
         .clk(clk),
+        .pc_write(pc_write),
         .isBranch(is_branch && take_branch && pc_write),
         .isJump(is_jal && pc_write),
         .isJALR(is_jalr && pc_write),
