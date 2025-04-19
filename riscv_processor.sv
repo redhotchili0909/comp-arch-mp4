@@ -133,9 +133,10 @@ module riscv_processor(
 
     // Memory module for instruction and data
     memory #(
-        .INIT_FILE("BradTest/rv32i_test.txt")  // memory file
+        .INIT_FILE("BradTest/basic_arith.txt")  // memory file
     ) memory_module(
         .clk(clk),
+        .rst_n(rst_n),
         .write_mem(mem_write),
         .funct3(mem_funct3),
         .write_address(alu_result_reg),
