@@ -50,7 +50,7 @@ module riscv_tb;
 
   // Simplified testbench
   initial begin
-    $dumpfile("riscv_debug.vcd");
+    $dumpfile("brad_tb.vcd");
     $dumpvars(0, riscv_tb);
     
     // Reset sequence
