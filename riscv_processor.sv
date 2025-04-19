@@ -11,17 +11,30 @@
 module riscv_processor(
     input logic clk,
     input logic rst_n,
+    output logic fetch_cycle,
+    output logic pc_write,
     output logic led,
     output logic red,
     output logic green,
-    output logic blue
+    output logic blue,
+    output logic is_branch,
+    output logic is_jal,
+    output logic is_jalr,
+    output logic take_branch,
+    output logic [31:0] pc,
+    output logic [31:0] instruction_reg,
+    output logic [31:0] immediate,
+    output logic [31:0] rs1_data,
+    output logic [31:0] rs2_data,
+    output logic [31:0] alu_result,
+    output logic [2:0] current_state
 );
     // Internal signals
-    logic [31:0] pc;                // Program Counter
-    logic [31:0] instruction_reg;   // Instruction register
-    logic [31:0] immediate;         // Immediate value
-    logic [31:0] rs1_data, rs2_data; // Register file outputs
-    logic [31:0] alu_result;        // ALU result
+    //logic [31:0] pc;                // Program Counter
+    //logic [31:0] instruction_reg;   // Instruction register
+    //logic [31:0] immediate;         // Immediate value
+    //logic [31:0] rs1_data, rs2_data; // Register file outputs
+    //logic [31:0] alu_result;        // ALU result
     logic [31:0] alu_result_reg;    // ALU result register
     logic [31:0] read_data;         // Memory read data
     logic [31:0] mem_data_reg;      // Memory data register
@@ -35,14 +48,14 @@ module riscv_processor(
     logic zero;                     // ALU zero flag
     logic less_than;                // ALU less than (signed) flag
     logic less_than_u;              // ALU less than (unsigned) flag
-    logic take_branch;              // Branch decision
-    logic pc_write;                 // PC write enable
+    //logic take_branch;              // Branch decision
+    //logic pc_write;                 // PC write enable
     logic ir_write;                 // Instruction register write enable
     logic reg_write;                // Register write enable
     logic mem_write;                // Memory write enable
     logic mem_read;                 // Memory read enable
-    logic is_branch;                // Branch instruction flag
-    logic is_jal, is_jalr;          // Jump instruction flags
+    //logic is_branch;                // Branch instruction flag
+    //logic is_jal, is_jalr;          // Jump instruction flags
     
     // ALU control signals
     logic [3:0] alu_op;             // ALU operation
@@ -57,6 +70,8 @@ module riscv_processor(
     logic [6:0] opcode;             // opcode field from instruction
 
     logic [2:0] mem_funct3;         // funct3 for memory operations
+    //logic fetch_cycle;             // Fetch cycle indicator
+    logic mem_ready;              // Memory ready signal
 
     // Program Counter module
     prog_count pc_module(
@@ -92,19 +107,20 @@ module riscv_processor(
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             mem_data_reg <= 32'h0;
-        end else if (mem_read) begin
+        end else if (mem_ready) begin
             mem_data_reg <= read_data;
         end
     end
 
     always_comb begin
-        if (mem_read) begin
-            // For data reads, use the funct3 from the instruction
+        if (fetch_cycle)           // top priority
+            mem_funct3 = 3'b010;   // 32‑bit instruction fetch
+        else if (mem_write)        // store
             mem_funct3 = funct3;
-        end else begin
-            // For instruction fetch, always use 3'b010 (word read)
-            mem_funct3 = 3'b010;
-        end
+        else if (mem_read)         // load
+            mem_funct3 = funct3;
+        else
+            mem_funct3 = 3'b010;   // idle default (doesn’t really matter)
     end
 
     // Memory module for instruction and data
@@ -115,8 +131,10 @@ module riscv_processor(
         .write_mem(mem_write),
         .funct3(mem_funct3),
         .write_address(alu_result_reg),
+        .mem_read(mem_read),
+        .mem_ready(mem_ready),
         .write_data(rs2_data),
-        .read_address(mem_read ? alu_result_reg : pc),
+        .read_address(fetch_cycle ? pc : alu_result_reg),
         .read_data(read_data),
         .led(led),
         .red(red),
@@ -222,6 +240,8 @@ module riscv_processor(
         .rst_n(rst_n),
         .opcode(opcode),
         .take_branch(take_branch),
+        .mem_ready(mem_ready),
+        .fetch_cycle(fetch_cycle),
         .pc_write(pc_write),
         .ir_write(ir_write),
         .reg_write(reg_write),
@@ -232,7 +252,8 @@ module riscv_processor(
         .is_jalr(is_jalr),
         .alu_src_a(alu_src_a),
         .alu_src_b(alu_src_b),
-        .wb_sel(wb_sel)
+        .wb_sel(wb_sel),
+        .current_state(current_state)
     );
 
 endmodule

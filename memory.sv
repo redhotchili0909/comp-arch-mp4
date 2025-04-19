@@ -22,12 +22,14 @@
 module memory #(
     parameter INIT_FILE = ""
 )(
-    input logic     clk, 
+    input logic     clk,
+    input logic     mem_read,     // Memory read signal
     input logic     write_mem, 
     input logic     [2:0] funct3,   // funct3 should be 3'b010 when fetching instructions as it is during execution of lw / sw instructions
     input logic     [31:0] write_address, 
     input logic     [31:0] write_data, 
     input logic     [31:0] read_address, 
+    output logic     mem_ready,      // Memory ready signal 
     output logic    [31:0] read_data, 
     output logic    led,            // Active-high PWM output for user LED
     output logic    red,            // Active-high PWM output for red LED
@@ -81,6 +83,9 @@ module memory #(
             end
         end
     end
+
+    always_ff @(posedge clk)
+        mem_ready <= mem_read;
 
     // Handle memory reads
     always_ff @(posedge clk) begin

@@ -3,6 +3,8 @@ module control_unit(
     input logic rst_n,
     input logic [6:0] opcode,
     input logic take_branch,        // From branch control unit
+    input logic mem_ready,
+    output logic fetch_cycle,
     output logic pc_write,          // Enable PC update
     output logic ir_write,          // Enable instruction register update
     output logic reg_write,         // Enable register file write
@@ -13,7 +15,8 @@ module control_unit(
     output logic is_jalr,           // JALR instruction indicator
     output logic [1:0] alu_src_a,   // ALU input A source select
     output logic [1:0] alu_src_b,   // ALU input B source select
-    output logic [1:0] wb_sel       // Write-back select
+    output logic [1:0] wb_sel,       // Write-back select
+    output logic [2:0] current_state // Current state of the FSM
 );
 
     // RISC-V opcode definitions
@@ -36,8 +39,10 @@ module control_unit(
         WRITEBACK
     } state;
 
-    state current_state, next_state;
-    
+    state  next_state, state_reg;
+
+    assign current_state = state_reg;
+
     // Instruction type signals (derived from opcode)
     logic is_load, is_store, is_r_type, is_i_type, is_lui, is_auipc;
     
@@ -57,16 +62,16 @@ module control_unit(
     // State register
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
-            current_state <= FETCH;
+            state_reg <= FETCH;
         else
-            current_state <= next_state;
+            state_reg <= next_state;
     end
 
     // Next state logic
     always_comb begin
-        next_state = current_state; // Default: stay in current state
+        next_state = state_reg; // Default: stay in current state
 
-        case (current_state)
+        case (state_reg)
             FETCH: 
                 next_state = DECODE;
                 
@@ -100,6 +105,7 @@ module control_unit(
     // Output logic - Optimized with clearer signal assignment
     always_comb begin
         // Default values
+        fetch_cycle = 1'b0;
         pc_write = 1'b0;
         ir_write = 1'b0;
         reg_write = 1'b0;
@@ -109,10 +115,15 @@ module control_unit(
         alu_src_b = 2'b00;  // Default: rs2
         wb_sel = 2'b00;     // Default: ALU result
 
-        case (current_state)
+        case (state_reg)
             FETCH: begin
+                fetch_cycle = 1'b1;  // Fetch instruction
                 mem_read = 1'b1;  // Read instruction from memory
-                ir_write = 1'b1;  // Write to instruction register
+            end
+
+            DECODE: begin
+                mem_read = 1'b1;
+                ir_write = mem_ready;
             end
 
             EXECUTE: begin
@@ -134,10 +145,13 @@ module control_unit(
                     alu_src_b = 2'b01;  // immediate
                 end
 
+                if (is_branch) begin
+                    pc_write = 1'b1;
+                end 
+
                 // Handle PC updates for branches and jumps
                 if ((is_branch && take_branch) || is_jal || is_jalr) begin
                     pc_write = 1'b1;  // Update PC for these instructions
-                    
                     if (is_jal || is_jalr)
                         wb_sel = 2'b10;  // PC+4 for link register
                 end
@@ -156,13 +170,11 @@ module control_unit(
                 // Handle register write-back
                 if (!is_store && !is_branch) begin
                     reg_write = 1'b1;  // Enable register write
-                    
-                    if (is_load)
-                        wb_sel = 2'b01;  // Memory data
-                    else if (is_jal || is_jalr)
-                        wb_sel = 2'b10;  // PC+4 (already set in EXECUTE)
-                    else
-                        wb_sel = 2'b00;  // ALU result
+
+                    wb_sel = (is_load) ? 2'b01 : 
+                        (is_jal || is_jalr) ? 2'b10 :
+                        2'b00;  // Default to ALU result
+                
                 end
                 
                 // Update PC for next instruction if not already updated
