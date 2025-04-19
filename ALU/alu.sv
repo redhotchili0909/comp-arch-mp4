@@ -31,6 +31,13 @@ module alu(
     logic signed_lt;
     logic unsigned_lt;
 
+    initial begin
+        result = 32'b0;
+        zero = 1'b0;
+        less_than = 1'b0;
+        less_than_u = 1'b0;
+    end
+
     // Shift amount (only the lower 5 bits are used)
     assign shift_amount = {27'b0, b[4:0]};
 
@@ -50,6 +57,8 @@ module alu(
         sll_result = a << shift_amount;
         srl_result = a >> shift_amount;
         sra_result = $signed(a) >>> shift_amount;
+
+        zero = (result == 32'b0);
         
         // Determine final result based on operation
         case (alu_op)
@@ -67,8 +76,6 @@ module alu(
             default:            result = 32'b0;
         endcase
     end
-
-    assign zero = (result == 32'b0);
     
     // Set less_than and less_than_u flags based on the specific operation
     always_comb begin

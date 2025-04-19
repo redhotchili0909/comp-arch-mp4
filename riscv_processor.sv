@@ -27,7 +27,9 @@ module riscv_processor(
     output logic [31:0] rs1_data,
     output logic [31:0] rs2_data,
     output logic [31:0] alu_result,
-    output logic [2:0] current_state
+    output logic [2:0] current_state,
+    output logic [4:0] debug_rd,
+    output logic [31:0] debug_wdata
 );
     // Internal signals
     //logic [31:0] pc;                // Program Counter
@@ -73,6 +75,11 @@ module riscv_processor(
     //logic fetch_cycle;             // Fetch cycle indicator
     logic mem_ready;              // Memory ready signal
 
+    initial begin
+        alu_result_reg = 32'h0;
+        mem_data_reg = 32'h0;
+    end
+
     // Program Counter module
     prog_count pc_module(
         .clk(clk),
@@ -80,6 +87,7 @@ module riscv_processor(
         .isBranch(is_branch && take_branch && pc_write),
         .isJump(is_jal && pc_write),
         .isJALR(is_jalr && pc_write),
+        .take_branch(take_branch),
         .immed(immediate),
         .rs1_data(rs1_data),
         .pc(pc)
@@ -107,7 +115,7 @@ module riscv_processor(
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             mem_data_reg <= 32'h0;
-        end else if (mem_ready) begin
+        end else if (mem_read && mem_ready) begin
             mem_data_reg <= read_data;
         end
     end
@@ -233,6 +241,10 @@ module riscv_processor(
             default: write_data = alu_result_reg;
         endcase
     end
+
+    // Debugging output
+    assign debug_rd = rd;
+    assign debug_wdata = write_data;
 
     // Control Unit (State Machine)
     control_unit fsm(

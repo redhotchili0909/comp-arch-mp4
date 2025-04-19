@@ -25,6 +25,7 @@ module memory #(
     input logic     clk,
     input logic     mem_read,     // Memory read signal
     input logic     write_mem, 
+    input logic     rst_n,
     input logic     [2:0] funct3,   // funct3 should be 3'b010 when fetching instructions as it is during execution of lw / sw instructions
     input logic     [31:0] write_address, 
     input logic     [31:0] write_data, 
@@ -84,8 +85,12 @@ module memory #(
         end
     end
 
-    always_ff @(posedge clk)
+    always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        mem_ready <= 1'b0;
+    else
         mem_ready <= mem_read;
+    end
 
     // Handle memory reads
     always_ff @(posedge clk) begin

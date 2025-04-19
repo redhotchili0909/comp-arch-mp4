@@ -4,6 +4,7 @@ module prog_count (
     input logic isBranch,
     input logic isJump,
     input logic isJALR,
+    input logic take_branch,
     input logic [31:0] immed, 
     input logic [31:0] rs1_data,
 
@@ -22,7 +23,7 @@ module prog_count (
   
     always_ff @(posedge clk) begin
         if (pc_write) begin 
-            if (isJump || isBranch) begin
+            if (isJump || (isBranch && take_branch)) begin
                 pc <= PC_immed;
             end else if (isJALR) begin
                 pc <= PC_rs1;

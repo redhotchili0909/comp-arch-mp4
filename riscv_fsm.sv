@@ -15,7 +15,7 @@ module control_unit(
     output logic is_jalr,           // JALR instruction indicator
     output logic [1:0] alu_src_a,   // ALU input A source select
     output logic [1:0] alu_src_b,   // ALU input B source select
-    output logic [1:0] wb_sel,       // Write-back select
+    output logic [1:0] wb_sel,      // Write-back select
     output logic [2:0] current_state // Current state of the FSM
 );
 
@@ -39,7 +39,7 @@ module control_unit(
         WRITEBACK
     } state;
 
-    state  next_state, state_reg;
+    state next_state, state_reg;
 
     assign current_state = state_reg;
 
@@ -59,6 +59,21 @@ module control_unit(
         is_auipc  = (opcode == OPCODE_AUIPC);
     end
 
+    initial begin
+        fetch_cycle = 1'b0;
+        pc_write = 1'b0;
+        ir_write = 1'b0;
+        reg_write = 1'b0;
+        mem_write = 1'b0;
+        mem_read = 1'b0;
+        is_branch = 1'b0;
+        is_jal = 1'b0;
+        is_jalr = 1'b0;
+        alu_src_a = 2'b00;
+        alu_src_b = 2'b00;
+        wb_sel = 2'b00;
+    end
+
     // State register
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
@@ -67,13 +82,17 @@ module control_unit(
             state_reg <= next_state;
     end
 
-    // Next state logic
+    // Next state logic with proper wait states for memory operations
     always_comb begin
-        next_state = state_reg; // Default: stay in current state
+        next_state = state_reg;
 
         case (state_reg)
-            FETCH: 
-                next_state = DECODE;
+            FETCH: begin
+                if (mem_ready)
+                    next_state = DECODE;
+                else
+                    next_state = FETCH;
+            end
                 
             DECODE:
                 next_state = EXECUTE;
@@ -83,14 +102,22 @@ module control_unit(
                     next_state = MEM_ACCESS;
                 else if (is_branch)
                     next_state = FETCH;
-                else
+                else if (is_jal || is_jalr)
                     next_state = WRITEBACK;
+                else if (is_r_type || is_i_type || is_lui || is_auipc)
+                    next_state = WRITEBACK;
+                else 
+                    next_state = FETCH;
             end
                 
             MEM_ACCESS: begin
-                if (is_load)
-                    next_state = WRITEBACK;
-                else // STORE
+                if (is_load) begin
+                    if (mem_ready)
+                        next_state = WRITEBACK;
+                    else
+                        next_state = MEM_ACCESS; 
+                end
+                else
                     next_state = FETCH;
             end
                 
@@ -102,64 +129,70 @@ module control_unit(
         endcase
     end
 
-    // Output logic - Optimized with clearer signal assignment
     always_comb begin
-        // Default values
         fetch_cycle = 1'b0;
         pc_write = 1'b0;
         ir_write = 1'b0;
         reg_write = 1'b0;
         mem_write = 1'b0;
         mem_read = 1'b0;
-        alu_src_a = 2'b00;  // Default: rs1
-        alu_src_b = 2'b00;  // Default: rs2
-        wb_sel = 2'b00;     // Default: ALU result
+        alu_src_a = 2'b00;
+        alu_src_b = 2'b00;
+        wb_sel = 2'b00;
 
         case (state_reg)
             FETCH: begin
-                fetch_cycle = 1'b1;  // Fetch instruction
-                mem_read = 1'b1;  // Read instruction from memory
+                fetch_cycle = 1'b1;
+                mem_read = 1'b1;
             end
 
             DECODE: begin
-                mem_read = 1'b1;
-                ir_write = mem_ready;
+                if (mem_ready) begin
+                    ir_write = 1'b1;
+                end
             end
 
             EXECUTE: begin
-                // Set ALU sources based on instruction type
-                if (is_r_type) begin
-                    alu_src_a = 2'b00;  // rs1
-                    alu_src_b = 2'b00;  // rs2
-                end
-                else if (is_i_type || is_load || is_store || is_jalr) begin
-                    alu_src_a = 2'b00;  // rs1
-                    alu_src_b = 2'b01;  // immediate
-                end
-                else if (is_lui) begin
-                    alu_src_a = 2'b10;  // Zero
-                    alu_src_b = 2'b01;  // immediate
-                end
-                else if (is_auipc) begin
+                // Control signals for each instruction type
+                if (is_jal) begin
+                    pc_write = 1'b1;   // Update PC for JAL
+                    wb_sel = 2'b10;    // PC+4 for link register
                     alu_src_a = 2'b01;  // PC
                     alu_src_b = 2'b01;  // immediate
                 end
-
-                if (is_branch) begin
-                    pc_write = 1'b1;
-                end 
-
-                // Handle PC updates for branches and jumps
-                if ((is_branch && take_branch) || is_jal || is_jalr) begin
-                    pc_write = 1'b1;  // Update PC for these instructions
-                    if (is_jal || is_jalr)
-                        wb_sel = 2'b10;  // PC+4 for link register
+                else if (is_jalr) begin
+                    pc_write = 1'b1;   // Update PC for JALR
+                    wb_sel = 2'b10;    // PC+4 for link register
+                    alu_src_a = 2'b00;  // rs1
+                    alu_src_b = 2'b01;  // immediate
+                end
+                else if (is_branch) begin
+                    pc_write = 1'b1;   // Always update PC for branches
+                    alu_src_a = 2'b00; // rs1
+                    alu_src_b = 2'b00; // rs2
+                end
+                else if (is_r_type) begin
+                    alu_src_a = 2'b00; // rs1
+                    alu_src_b = 2'b00; // rs2
+                end
+                else if (is_i_type || is_load || is_store) begin
+                    alu_src_a = 2'b00; // rs1
+                    alu_src_b = 2'b01; // immediate
+                end
+                else if (is_lui) begin
+                    alu_src_a = 2'b10; // Zero
+                    alu_src_b = 2'b01; // immediate
+                end
+                else if (is_auipc) begin
+                    alu_src_a = 2'b01; // PC
+                    alu_src_b = 2'b01; // immediate
                 end
             end
 
             MEM_ACCESS: begin
-                if (is_load)
+                if (is_load) begin
                     mem_read = 1'b1;   // Read from memory
+                end
                 else if (is_store) begin
                     mem_write = 1'b1;  // Write to memory
                     pc_write = 1'b1;   // Update PC after store
@@ -167,14 +200,16 @@ module control_unit(
             end 
 
             WRITEBACK: begin
-                // Handle register write-back
-                if (!is_store && !is_branch) begin
+                // Handle register write-back for all instruction types that need it
+                if (is_r_type || is_i_type || is_load || is_jal || is_jalr || is_lui || is_auipc) begin
                     reg_write = 1'b1;  // Enable register write
-
-                    wb_sel = (is_load) ? 2'b01 : 
-                        (is_jal || is_jalr) ? 2'b10 :
-                        2'b00;  // Default to ALU result
-                
+                    
+                    if (is_load)
+                        wb_sel = 2'b01;  // Memory data
+                    else if (is_jal || is_jalr)
+                        wb_sel = 2'b10;  // PC+4
+                    else
+                        wb_sel = 2'b00;  // ALU result
                 end
                 
                 // Update PC for next instruction if not already updated
@@ -183,6 +218,12 @@ module control_unit(
             end
 
             default: begin
+                fetch_cycle = 1'b0;
+                pc_write = 1'b0;
+                ir_write = 1'b0;
+                reg_write = 1'b0;
+                mem_write = 1'b0;
+                mem_read = 1'b0;
             end
         endcase
     end

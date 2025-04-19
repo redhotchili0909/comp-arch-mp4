@@ -22,7 +22,7 @@ module immed_gen(
                 immediate = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]};
             end
             7'b1100011: begin // Branch instructions (B-type)
-                immediate = {{20{instruction[31]}}, instruction[7], instruction[30:25], instruction[11:8], 1'b0};
+                immediate = {{19{instruction[31]}}, instruction[31], instruction[7], instruction[30:25], instruction[11:8], 1'b0};
             end
             7'b1101111: begin // JAL (J-type)
                 immediate = {{12{instruction[31]}}, instruction[19:12], instruction[20], instruction[30:21], 1'b0};

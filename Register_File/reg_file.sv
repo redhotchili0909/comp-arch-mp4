@@ -1,36 +1,45 @@
 module reg_file(
     input logic clk,
-    input logic w_en, //write enable
-    input logic [4:0] rs1, //source register 1
-    input logic [4:0] rs2, //source register 2
-    input logic [4:0] rd, //destination register
-    input logic [31:0] rdv, //write data
+    input logic w_en,
+    input logic [4:0] rs1,
+    input logic [4:0] rs2,
+    input logic [4:0] rd,
+    input logic [31:0] rdv,
     
-    output logic [31:0] rs1_data, //read data 1
-    output logic [31:0] rs2_data //read data 2
+    output logic [31:0] rs1_data,
+    output logic [31:0] rs2_data
 );
 
-logic [31:0] registers [0:31]; //32 registers of 32 bits each
+    logic [31:0] registers [0:31];
 
-initial begin
-    for (int i = 0; i < 32; i++) begin
-            registers[i] <= 32'b0;
+    initial begin
+        for (int i = 0; i < 32; i++) begin
+            registers[i] = 32'b0;
         end
-end
-
-// Init registers to 0
-always_ff @(posedge clk) begin
-    if (w_en && rd != 5'b0) begin // Write to register if w_en is high and rd is not zero register
-        registers[rd] <= rdv;
     end
-end
 
-// read rdv directly if rd == rs1 or rd == rs2 and w_en is high
-assign rs1_data = (rs1 == 5'd0) ? 32'd0 :
-                  (rs1 == rd && w_en) ? rdv : registers[rs1];
+    always_ff @(posedge clk) begin
+        if (w_en && rd != 5'b0) begin
+            registers[rd] <= rdv;
+        end
+    end
 
-assign rs2_data = (rs2 == 5'd0) ? 32'd0 :
-                  (rs2 == rd && w_en) ? rdv : registers[rs2];
+    always_comb begin
+        rs1_data = 32'b0;
+        rs2_data = 32'b0;
 
-
+        if (rs1 == 5'd0)
+            rs1_data = 32'd0;
+        else if (rs1 == rd && w_en)
+            rs1_data = rdv;
+        else
+            rs1_data = registers[rs1];
+            
+        if (rs2 == 5'd0)
+            rs2_data = 32'd0;
+        else if (rs2 == rd && w_en)
+            rs2_data = rdv;
+        else
+            rs2_data = registers[rs2];
+    end
 endmodule
