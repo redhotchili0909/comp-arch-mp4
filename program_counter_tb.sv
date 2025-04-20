@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-`include "program_counter.sv"
+`include "modules/program_counter.sv"
 
 module program_counter_tb;
 
@@ -14,7 +14,7 @@ module program_counter_tb;
     // Output
     logic [31:0] pc_out;
 
-    // Instantiate the DUT (Device Under Test)
+    // Instantiate the DUT
     program_counter dut (
         .pc_source(pc_source),
         .rs1_data(rs1_data),
@@ -40,7 +40,7 @@ module program_counter_tb;
         $dumpfile("program_counter_tb.vcd");
         $dumpvars(0, program_counter_tb);
 
-        // Common inputs
+        // Initial inputs
         pc_in = 32'h1000;
         rs1_data = 32'h2000;
         immediate = 32'h00000010;  // 16 decimal

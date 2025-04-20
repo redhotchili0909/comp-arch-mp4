@@ -22,9 +22,9 @@ module state_machine(
 );
 
     typedef enum logic [1:0] {
-        FETCH,
-        EXECUTE,
-        MEMORY
+        FETCH   = 2'b00,
+        EXECUTE = 2'b01,
+        MEMORY  = 2'b10
     } state_t;
 
     state_t state;
@@ -35,11 +35,12 @@ module state_machine(
         instruction = 32'b0;
     end
 
-    assign reg_wen = !(action_type == IS_BRANCH | action_type == IS_STORE) & (state != FETCH);
-    assign memory_func3 = ((action_type == IS_LOAD | action_type == IS_STORE) & state != MEMORY) ? func3 : 3'b010;
-    assign memory_wen = action_type == IS_STORE & state == EXECUTE;
+    assign reg_wen = !(action_type == IS_BRANCH || action_type == IS_STORE) & (state != FETCH);
+    assign memory_func3 = ((action_type == IS_LOAD || action_type == IS_STORE) & state != MEMORY) ? func3 : 3'b010;
+    assign memory_wen = action_type == IS_STORE && state == EXECUTE;
 
     always_comb begin
+        memory_ra = 32'b0;
         if (state == MEMORY) begin  
             memory_ra = pc_in; // read current instruction
         end else begin
@@ -64,13 +65,13 @@ module state_machine(
                 if (action_type != IS_JAL) begin
                     pc_in <= pc_out;
                 end
-                if (action_type == IS_LOAD | action_type == IS_STORE) begin
+                if (action_type == IS_LOAD || action_type == IS_STORE) begin
                     state <= MEMORY;
                 end else begin
                     state <= FETCH;
                 end
             end
-            MEMORY: begin // MEMORY
+            MEMORY: begin
                 state <= FETCH;
             end
         endcase
