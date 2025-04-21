@@ -1,0 +1,393 @@
+$date
+	Sun Apr 20 19:14:53 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module alu_tb $end
+$var wire 32 ! alu_result [31:0] $end
+$var parameter 5 " ALU_ADD $end
+$var parameter 5 # ALU_AND $end
+$var parameter 5 $ ALU_AUIPC $end
+$var parameter 5 % ALU_BEQ $end
+$var parameter 5 & ALU_BGE $end
+$var parameter 5 ' ALU_BGEU $end
+$var parameter 5 ( ALU_BLT $end
+$var parameter 5 ) ALU_BLTU $end
+$var parameter 5 * ALU_BNE $end
+$var parameter 5 + ALU_LUI $end
+$var parameter 5 , ALU_OR $end
+$var parameter 5 - ALU_SLL $end
+$var parameter 5 . ALU_SLT $end
+$var parameter 5 / ALU_SLTU $end
+$var parameter 5 0 ALU_SRA $end
+$var parameter 5 1 ALU_SRL $end
+$var parameter 5 2 ALU_SUB $end
+$var parameter 5 3 ALU_XOR $end
+$var reg 32 4 alu_a [31:0] $end
+$var reg 32 5 alu_b [31:0] $end
+$var reg 5 6 alu_op [4:0] $end
+$scope module dut $end
+$var wire 32 7 alu_a [31:0] $end
+$var wire 32 8 alu_b [31:0] $end
+$var wire 5 9 alu_op [4:0] $end
+$var wire 1 : unsigned_lt $end
+$var wire 1 ; signed_lt $end
+$var wire 32 < shift_amount [31:0] $end
+$var wire 1 = equal $end
+$var parameter 5 > ALU_ADD $end
+$var parameter 5 ? ALU_AND $end
+$var parameter 5 @ ALU_AUIPC $end
+$var parameter 5 A ALU_BEQ $end
+$var parameter 5 B ALU_BGE $end
+$var parameter 5 C ALU_BGEU $end
+$var parameter 5 D ALU_BLT $end
+$var parameter 5 E ALU_BLTU $end
+$var parameter 5 F ALU_BNE $end
+$var parameter 5 G ALU_LUI $end
+$var parameter 5 H ALU_OR $end
+$var parameter 5 I ALU_SLL $end
+$var parameter 5 J ALU_SLT $end
+$var parameter 5 K ALU_SLTU $end
+$var parameter 5 L ALU_SRA $end
+$var parameter 5 M ALU_SRL $end
+$var parameter 5 N ALU_SUB $end
+$var parameter 5 O ALU_XOR $end
+$var reg 32 P add_sub_result [31:0] $end
+$var reg 32 Q alu_result [31:0] $end
+$upscope $end
+$scope task test $end
+$var reg 32 R a [31:0] $end
+$var reg 32 S b [31:0] $end
+$var reg 32 T expected [31:0] $end
+$var reg 5 U op [4:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b101 O
+b1 N
+b110 M
+b111 L
+b100 K
+b11 J
+b10 I
+b1000 H
+b1011 G
+b1101 F
+b10000 E
+b1110 D
+b10001 C
+b1111 B
+b1010 A
+b1100 @
+b1001 ?
+b0 >
+b101 3
+b1 2
+b110 1
+b111 0
+b100 /
+b11 .
+b10 -
+b1000 ,
+b1011 +
+b1101 *
+b10000 )
+b1110 (
+b10001 '
+b1111 &
+b1010 %
+b1100 $
+b1001 #
+b0 "
+$end
+#0
+$dumpvars
+b0 U
+b1111 T
+b101 S
+b1010 R
+b1111 Q
+b1111 P
+0=
+b101 <
+0;
+0:
+b0 9
+b101 8
+b1010 7
+b0 6
+b101 5
+b1010 4
+b1111 !
+$end
+#1000
+b101 !
+b101 Q
+b101 P
+b1 6
+b1 9
+b101 T
+b1 U
+#2000
+b1 <
+b11110 !
+b11110 Q
+b10000 P
+b10 6
+b10 9
+b1 5
+b1 8
+b1111 4
+b1111 7
+b11110 T
+b10 U
+b1 S
+b1111 R
+#3000
+b100 <
+b1111 !
+b1111 Q
+b11110100 P
+b110 6
+b110 9
+b100 5
+b100 8
+b11110000 4
+b11110000 7
+b1111 T
+b110 U
+b100 S
+b11110000 R
+#4000
+b11111111111111111111111111110100 P
+b11111111111111111111111111111111 !
+b11111111111111111111111111111111 Q
+b111 6
+b111 9
+1;
+b11111111111111111111111111110000 4
+b11111111111111111111111111110000 7
+b11111111111111111111111111111111 T
+b111 U
+b11111111111111111111111111110000 R
+#5000
+b101 <
+b1000 P
+b1 !
+b1 Q
+b11 6
+b11 9
+b101 5
+b101 8
+1:
+b11 4
+b11 7
+b1 T
+b11 U
+b101 S
+b11 R
+#6000
+b11 <
+b0 !
+b0 Q
+b11 5
+b11 8
+0=
+0;
+0:
+b101 4
+b101 7
+b0 T
+b11 S
+b101 R
+#7000
+b101 <
+b1 !
+b1 Q
+b100 6
+b100 9
+1;
+1:
+b101 5
+b101 8
+0=
+b11 4
+b11 7
+b1 T
+b100 U
+b101 S
+b11 R
+#8000
+b11 <
+b0 !
+b0 Q
+b11 5
+b11 8
+0=
+0;
+0:
+b101 4
+b101 7
+b0 T
+b11 S
+b101 R
+#9000
+b11111 <
+b11110000000000001111 !
+b11110000000000001111 Q
+b10000000011100001000000001110 P
+b1001 6
+b1001 9
+b111111110000000011111111 5
+b111111110000000011111111 8
+b1111000011110000111100001111 4
+b1111000011110000111100001111 7
+b11110000000000001111 T
+b1001 U
+b111111110000000011111111 S
+b1111000011110000111100001111 R
+#10000
+b1111111111110000111111111111 !
+b1111111111110000111111111111 Q
+b1000 6
+b1000 9
+b1111111111110000111111111111 T
+b1000 U
+#11000
+b1111111100000000111111110000 !
+b1111111100000000111111110000 Q
+b101 6
+b101 9
+b1111111100000000111111110000 T
+b101 U
+#12000
+b11011 <
+b11110110 P
+b1 !
+b1 Q
+b1010 6
+b1010 9
+1=
+b1111011 5
+b1111011 8
+0;
+0:
+b1111011 4
+b1111011 7
+b1 T
+b1010 U
+b1111011 S
+b1111011 R
+#13000
+b1000 <
+b1001000011 P
+b0 !
+b0 Q
+0=
+1;
+1:
+b111001000 5
+b111001000 8
+b0 T
+b111001000 S
+#14000
+b1 !
+b1 Q
+b1101 6
+b1101 9
+b1 T
+b1101 U
+#15000
+b10101 <
+b11000101010 P
+b0 !
+b0 Q
+1=
+b1100010101 5
+b1100010101 8
+0;
+0:
+b1100010101 4
+b1100010101 7
+b0 T
+b1100010101 S
+b1100010101 R
+#16000
+b100 <
+b10000000000000000000000000100 P
+b10000000000000000000000000100 !
+b10000000000000000000000000100 Q
+b1100 6
+b1100 9
+b100 5
+b100 8
+0=
+b10000000000000000000000000000 4
+b10000000000000000000000000000 7
+b10000000000000000000000000100 T
+b1100 U
+b100 S
+b10000000000000000000000000000 R
+#17000
+b10110 <
+b11111111111111111111111111110001 P
+b1 !
+b1 Q
+b1111 6
+b1111 9
+b11111111111111111111111111110110 5
+b11111111111111111111111111110110 8
+0;
+b11111111111111111111111111111011 4
+b11111111111111111111111111111011 7
+b1 T
+b1111 U
+b11111111111111111111111111110110 S
+b11111111111111111111111111111011 R
+#18000
+b1010 <
+b1111 P
+b1110 6
+b1110 9
+1;
+b1010 5
+b1010 8
+1:
+b101 4
+b101 7
+b1110 U
+b1010 S
+b101 R
+#19000
+b0 <
+b0 P
+b10001 6
+b10001 9
+b10000000000000000000000000000 5
+b10000000000000000000000000000 8
+0:
+b11110000000000000000000000000000 4
+b11110000000000000000000000000000 7
+b10001 U
+b10000000000000000000000000000 S
+b11110000000000000000000000000000 R
+#20000
+b10000 <
+b10001 P
+b10000 6
+b10000 9
+b10000 5
+b10000 8
+1:
+b1 4
+b1 7
+b10000 U
+b10000 S
+b1 R
+#21000
