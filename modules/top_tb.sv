@@ -1,6 +1,5 @@
 `timescale 1ns / 1ps
 `include "top.sv"
-`include "memory.sv"
 module top_tb();
 
     // Testbench signals
