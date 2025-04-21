@@ -28,7 +28,7 @@ logic [1:0] rd_source; // MUX for controlling register data input
 logic [1:0] pc_source; // MUX for controlling program counter pointer source
 logic [1:0] alu_source; // MUX for controlling alu source
 
-logic [3:0] alu_op; // Port for controlling ALU operation
+logic [4:0] alu_op; // Port for controlling ALU operation
 
 /*
 Write enables for register (memory initialized as output)

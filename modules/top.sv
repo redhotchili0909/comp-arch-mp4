@@ -1,4 +1,5 @@
 `include "riscv.sv"
+`include "memory.sv"
 
 module top (
     input logic clk,
@@ -23,7 +24,7 @@ module top (
     );
 
     memory #(
-        .INIT_FILE("rv32i_test.txt")
+        .INIT_FILE("rv32i_test_single.txt")
     ) u_memory(
         .clk(clk),
         .write_mem(memory_wen),

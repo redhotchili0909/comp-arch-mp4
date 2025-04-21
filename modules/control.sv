@@ -14,7 +14,7 @@ module control(
     output logic [1:0] pc_source,
     output logic [1:0] rd_source,
     output logic [1:0] alu_source,
-    output logic [3:0] alu_op,
+    output logic [4:0] alu_op,
     output instruction_t instruction_type
 );
 

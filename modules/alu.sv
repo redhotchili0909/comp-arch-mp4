@@ -1,7 +1,7 @@
 module alu(
     input logic [31:0] alu_a,
     input logic [31:0] alu_b,
-    input logic [3:0] alu_op,
+    input logic [4:0] alu_op,
     output logic [31:0] alu_result
 );
 
@@ -43,7 +43,7 @@ module alu(
         if (alu_op == ALU_SUB)
             add_sub_result = (alu_a - alu_b);
         else
-            add_sub_result = (alu_a + alu_b);
+            add_sub_result = ($signed(alu_a) + $signed(alu_b));
     end
 
     always_comb begin
