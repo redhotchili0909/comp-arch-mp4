@@ -9,29 +9,37 @@ module register_file(
     output logic [31:0] rs2_data
 );
 
-    /*
-    Initialize Registers
-    */
-    logic [31:0] registers [0:31]; // 32 registers of 32 bits
+    logic [31:0] registers [0:31];
+
+    // Used for bypass
+    logic [4:0] last_rd;
+    logic [31:0] last_rdv;
+    logic last_wen;
+
     initial begin
         for (int i = 0; i < 32; i++) begin
-                registers[i] <= 32'b0;
+            registers[i] = 32'b0;
         end
+        last_rd = 5'b0;
+        last_rdv = 32'b0;
+        last_wen = 1'b0;
     end
 
     always_ff @(posedge clk) begin
-        if (reg_wen && rd != 5'b0) begin // Write to register if reg_wen is high and rd is not zero register
-        registers[rd] <= rdv;
+        if (reg_wen && rd != 5'b0) begin
+            registers[rd] <= rdv;
         end
+        last_rd <= rd;
+        last_rdv <= rdv;
+        last_wen <= reg_wen;
     end
 
-    /*
-    Read rdv directly if rd == rs1 or rd == rs2 and reg_wen is high
-    */
-    assign rs1_data = (rs1 == 5'd0) ? 32'd0 :
-                  (rs1 == rd && reg_wen) ? rdv : registers[rs1];
+    always_comb begin
+        rs1_data = (rs1 == 5'd0) ? 32'd0 :
+                   (rs1 == last_rd && last_wen) ? last_rdv : registers[rs1];
 
-    assign rs2_data = (rs2 == 5'd0) ? 32'd0 :
-                  (rs2 == rd && reg_wen) ? rdv : registers[rs2];
+        rs2_data = (rs2 == 5'd0) ? 32'd0 :
+                   (rs2 == last_rd && last_wen) ? last_rdv : registers[rs2];
+    end
 
 endmodule
