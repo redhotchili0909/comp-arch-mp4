@@ -221,5 +221,9 @@ always_comb begin
     endcase
 end
 
+// Assign memory data paths
+assign memory_wa = rs1_data + immediate;
+assign memory_wd = rs2_data;
+
 
 endmodule
