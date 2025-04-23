@@ -35,7 +35,7 @@ module state_machine(
         instruction = 32'b0;
     end
 
-    assign reg_wen = !(action_type == IS_BRANCH || action_type == IS_STORE) & (state != FETCH);
+    assign reg_wen = !(action_type == IS_BRANCH || action_type == IS_STORE) & (state == EXECUTE);
     assign memory_func3 = ((action_type == IS_LOAD || action_type == IS_STORE) & state != MEMORY) ? func3 : 3'b010;
     assign memory_wen = action_type == IS_STORE && state == EXECUTE;
 
