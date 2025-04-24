@@ -41,7 +41,7 @@ module alu(
     assign unsigned_lt = (alu_a < alu_b);
     always_comb begin
         if (alu_op == ALU_SUB)
-            add_sub_result = (alu_a - alu_b);
+            add_sub_result = ($signed(alu_a) - $signed(alu_b));
         else
             add_sub_result = ($signed(alu_a) + $signed(alu_b));
     end
