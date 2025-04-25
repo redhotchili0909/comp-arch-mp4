@@ -1,0 +1,5 @@
+00010FB7 // lui x31, 16        # x31 = 0x00010000
+00001FB7 // lui x31, 1         # x31 = 0x00001000
+DEADCFB7 // lui x31, 0xDEADC   # x31 = 0xDEADC000
+00002F17 // auipc x30, 2       # x30 = PC + 0x2000
+DEADCF17 // auipc x30, 0xDEADC # x30 = PC + 0xDEADC000
