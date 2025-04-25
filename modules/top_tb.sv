@@ -26,12 +26,7 @@ module top_tb();
 
         // Initialize signals
         clk = 0;
-        //rst_n = 1;
-
-        // Apply reset
-        //#20;
-        //rst_n = 1;
-
+    
         // Run for a while
         #8;
         $display("8 ticks");
