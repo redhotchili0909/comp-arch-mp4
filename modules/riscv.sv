@@ -30,13 +30,13 @@ logic [4:0] alu_op; // Port for controlling ALU operation
 Struct for easier opcode management
 */
 typedef enum logic [2:0] {
-    U_TYPE,
-    J_TYPE,
-    R_TYPE,
     I_TYPE,
+    U_TYPE,
     S_TYPE,
-    B_TYPE
-  } instruction_t;
+    R_TYPE,
+    B_TYPE,
+    J_TYPE
+    } instruction_t;
 
 instruction_t instruction_type;
 

@@ -1,10 +1,10 @@
  typedef enum logic [2:0] {
-    U_TYPE,
-    J_TYPE,
-    R_TYPE,
     I_TYPE,
+    U_TYPE,
     S_TYPE,
-    B_TYPE
+    R_TYPE,
+    B_TYPE,
+    J_TYPE
     } instruction_t;
 
 module control(
