@@ -1,8 +1,9 @@
-typedef enum logic [1:0] {
+typedef enum logic [2:0] {
     IS_STORE,
     IS_LOAD,
     IS_BRANCH,
-    IS_JAL
+    IS_JAL,
+    IS_REG
 } action_t;
 
 module state_machine(
@@ -35,7 +36,7 @@ module state_machine(
         instruction = 32'b0;
     end
 
-    assign reg_wen = !(action_type == IS_BRANCH || action_type == IS_STORE) & (state == EXECUTE);
+    assign reg_wen = !(action_type == IS_BRANCH || action_type == IS_STORE) & (state == EXECUTE || (state == MEMORY && action_type != IS_REG));
     assign memory_func3 = ((action_type == IS_LOAD || action_type == IS_STORE) & state != MEMORY) ? func3 : 3'b010;
     assign memory_wen = action_type == IS_STORE && state == EXECUTE;
 
