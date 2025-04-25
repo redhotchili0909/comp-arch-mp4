@@ -1,41 +1,42 @@
 `timescale 1ns / 1ps
-`include "riscv_processor.sv"
-module riscv_processor_tb;
+`include "top.sv"
+module top_tb();
 
     // Testbench signals
     logic clk;
-    logic rst_n;
     logic led, red, green, blue;
 
     // Instantiate the processor
-    riscv_processor u0 (
+    top u_top (
         .clk(clk),
-        .rst_n(rst_n),
-        .led(led),
-        .red(red),
-        .green(green),
-        .blue(blue)
+        .LED(led),
+        .RGB_R(red),
+        .RGB_G(green),
+        .RGB_B(blue)
     );
 
     // Clock generation: 10ns period
-    always #5 clk = ~clk;
+    always #4 clk = ~clk;
 
     // Initial block for test
     initial begin
         $display("Starting RISC-V processor testbench...");
-        $dumpfile("riscv_processor_tb.vcd"); // For GTKWave
-        $dumpvars(0, riscv_processor_tb);
+        $dumpfile("top_tb.vcd"); // For GTKWave
+        $dumpvars(0, top_tb);
 
         // Initialize signals
         clk = 0;
-        rst_n = 0;
-
-        // Apply reset
-        #20;
-        rst_n = 1;
-
+    
         // Run for a while
-        #1000;
+        #8;
+        $display("8 ticks");
+        #8;
+        $display("16 ticks");
+        #8;
+        $display("24 ticks");
+        #8;
+        $display("32 ticks");
+        #3200
 
         $display("Testbench finished.");
         $finish;

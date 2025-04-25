@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-`include "immed_gen.sv"
+`include "modules/immed_gen.sv"
 
 module immed_gen_tb;
 
@@ -36,7 +36,7 @@ module immed_gen_tb;
         test_immed(32'b0000001_00010_00001_010_00010_0100011, 32'h00000022);
 
         // B-Type: BEQ (opcode = 1100011)
-        test_immed(32'b0000000_00010_00001_000_00001_1_1100011, 32'h00000802);
+        test_immed(32'b000000000010000010000000111100011, 32'h00000802);
 
         // J-Type: JAL (opcode = 1101111)
         test_immed(32'b11111111111111111111000001101111, 32'hFFFFFFFE);
@@ -46,6 +46,8 @@ module immed_gen_tb;
 
         // U-Type: AUIPC (opcode = 0010111)
         test_immed(32'b00000000000100110000_00001_0010111, 32'h00130000);
+
+        test_immed(32'b11111111101100000000001010010011, 32'hfffffffb);
 
         // Default: unsupported opcode → immediate = 0
         test_immed(32'hFFFFFFFF, 32'h00000000);

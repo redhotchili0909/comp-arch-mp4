@@ -1,0 +1,69 @@
+$date
+	Sun Apr 20 14:20:41 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module program_counter_tb $end
+$var wire 32 ! pc_out [31:0] $end
+$var reg 32 " alu_result [31:0] $end
+$var reg 32 # immediate [31:0] $end
+$var reg 32 $ pc_in [31:0] $end
+$var reg 2 % pc_source [1:0] $end
+$var reg 32 & rs1_data [31:0] $end
+$scope module dut $end
+$var wire 32 ' alu_result [31:0] $end
+$var wire 32 ( immediate [31:0] $end
+$var wire 32 ) pc_in [31:0] $end
+$var wire 2 * pc_source [1:0] $end
+$var wire 32 + rs1_data [31:0] $end
+$var wire 32 , pc_rs1 [31:0] $end
+$var wire 32 - pc_increment [31:0] $end
+$var wire 32 . pc_immed [31:0] $end
+$var reg 32 / pc_out [31:0] $end
+$upscope $end
+$scope task display_state $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+b10000000010000 /
+b1000000010000 .
+b1000000000100 -
+b10000000010000 ,
+b10000000000000 +
+b0 *
+b1000000000000 )
+b10000 (
+b1 '
+b10000000000000 &
+b0 %
+b1000000000000 $
+b10000 #
+b1 "
+b10000000010000 !
+$end
+#1000
+b1000000010000 !
+b1000000010000 /
+b1 %
+b1 *
+#2000
+b10 %
+b10 *
+#3000
+b1000000000100 !
+b1000000000100 /
+b0 "
+b0 '
+#4000
+b11 %
+b11 *
+#5000
