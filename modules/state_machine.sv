@@ -40,6 +40,7 @@ module state_machine(
     assign memory_func3 = ((action_type == IS_LOAD || action_type == IS_STORE) & state != MEMORY) ? func3 : 3'b010;
     assign memory_wen = action_type == IS_STORE && state == EXECUTE;
 
+    // Set our memory read address data line
     always_comb begin
         memory_ra = 32'b0;
         if (state == MEMORY) begin  
