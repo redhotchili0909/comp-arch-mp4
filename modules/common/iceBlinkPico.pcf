@@ -1,0 +1,43 @@
+# I/O Pin Definitions for the iceBlinkPico (iCE40UP5K-SG48ITR) board
+
+# Tactile switches (active low)
+set_io -nowarn BOOT     9
+set_io -nowarn SW       38
+
+# LEDs (active low)
+set_io -nowarn LED      42
+set_io -nowarn RGB_B    39
+set_io -nowarn RGB_G    40
+set_io -nowarn RGB_R    41
+
+# 12-MHz CMOS oscillator
+set_io -nowarn clk      20
+
+# I/O pins routed to left header
+set_io -nowarn _31b     18
+set_io -nowarn _29b     19
+set_io -nowarn _37a     23
+set_io -nowarn _36b     25
+set_io -nowarn _39a     26
+set_io -nowarn _38b     27
+set_io -nowarn _41a     28
+set_io -nowarn _42b     31
+set_io -nowarn _43a     32
+set_io -nowarn _44b     34
+set_io -nowarn _46b     35
+
+# I/O pins routed to right header
+set_io -nowarn _20a     11
+set_io -nowarn _18a     10
+set_io -nowarn _13b     6
+set_io -nowarn _8a      4
+set_io -nowarn _9b      3
+set_io -nowarn _6a      2
+set_io -nowarn _4a      48
+set_io -nowarn _2a      47
+set_io -nowarn _0a      46
+set_io -nowarn _5a      45
+set_io -nowarn _3b      44
+set_io -nowarn _49a     43
+set_io -nowarn _45a     37
+set_io -nowarn _48b     36

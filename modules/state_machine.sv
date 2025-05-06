@@ -37,7 +37,7 @@ module state_machine(
     end
 
     assign reg_wen = !(action_type == IS_BRANCH || action_type == IS_STORE) & (state == EXECUTE || (state == MEMORY && action_type != IS_REG));
-    assign memory_func3 = ((action_type == IS_LOAD || action_type == IS_STORE) & state != MEMORY) ? func3 : 3'b010;
+    assign memory_func3 = ((action_type == IS_LOAD || action_type == IS_STORE) & state == EXECUTE) ? func3 : 3'b010;
     assign memory_wen = action_type == IS_STORE && state == EXECUTE;
 
     // Set our memory read address data line
