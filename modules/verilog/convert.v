@@ -895,7 +895,7 @@ module top (
 		.memory_wd(memory_wd),
 		.memory_func3(memory_func3)
 	);
-	memory #(.INIT_FILE("rgb_cycle")) u_memory(
+	memory #(.INIT_FILE("set_led")) u_memory(
 		.clk(clk),
 		.write_mem(memory_wen),
 		.funct3(memory_func3),
