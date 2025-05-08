@@ -1,4 +1,4 @@
-`timescale 1us / 1us
+`timescale 10ns / 10ns
 `include "top.sv"
 module top_tb();
 

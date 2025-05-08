@@ -2,20 +2,23 @@
 `include "memory_alt.sv"
 
 module top (
+    input logic clk,
     output logic LED,
     output logic RGB_R,
     output logic RGB_B,
     output logic RGB_G
 );
 
-    logic clk;
-    SB_HFOSC #(
-       .CLKHF_DIV("0b11")  // 48 MHz; 0b00 = 48 MHz, 0b01 = 24 MHz, 0b10 = 12 MHz, 0b11 = 6 MHz
-    ) hfosc_inst (
-       .CLKHFEN(1'b1),
-       .CLKHFPU(1'b1),
-     .CLKHF  (clk)
-    );
+    // uncomment for synthesis
+    
+    //logic clk;
+    //SB_HFOSC #(
+    //   .CLKHF_DIV("0b11")  // 48 MHz; 0b00 = 48 MHz, 0b01 = 24 MHz, 0b10 = 12 MHz, 0b11 = 6 MHz
+    //) hfosc_inst (
+       //.CLKHFEN(1'b1),
+      // .CLKHFPU(1'b1),
+     //.CLKHF  (clk)
+    //);
 
     logic [31:0] memory_ra, memory_wa, memory_rd, memory_wd;
     logic memory_wen;
