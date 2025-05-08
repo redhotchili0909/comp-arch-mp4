@@ -83,6 +83,8 @@ always_comb begin
         OP_LOAD : action_type = IS_LOAD;
         OP_BRANCH : action_type = IS_BRANCH;
         OP_JAL: action_type = IS_JAL;
+        OP_LUI,
+        OP_AUIPC : action_type = IS_REG;
         OP_REG,
         OP_IMM: action_type = IS_REG;
         default: action_type = IS_LOAD;
@@ -141,7 +143,7 @@ immed_gen u_immed_gen(
 Setup Program Counter Logic
 */
 logic[31:0] pc_in, pc_out;
-
+logic [31:0] alu_result;
 /*
 Initialize Program Counter
 */
@@ -157,7 +159,6 @@ program_counter u_program_counter(
 /*
 Setup ALU Logic
 */
-logic [31:0] alu_result;
 // external to ALU, for the rdv input for JAL and JALR, we will just have a constant PC + 4 path ready.
 // in addition, for LUI we will just have a constant path from immediate to rdv
 logic [31:0] alu_a, alu_b; //alu operands

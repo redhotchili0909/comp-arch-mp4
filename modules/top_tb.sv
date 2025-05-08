@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 10ns / 10ns
 `include "top.sv"
 module top_tb();
 
@@ -16,7 +16,7 @@ module top_tb();
     );
 
     // Clock generation: 10ns period
-    always #4 clk = ~clk;
+    always #0.5 clk = ~clk;
 
     // Initial block for test
     initial begin
@@ -36,7 +36,7 @@ module top_tb();
         $display("24 ticks");
         #8;
         $display("32 ticks");
-        #3200
+    #1000000;
 
         $display("Testbench finished.");
         $finish;
